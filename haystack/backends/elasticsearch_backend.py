@@ -292,7 +292,7 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
                         warnings.warn("In order to sort by distance, you must call the '.distance(...)' method.")
 
                     # Regular sorting.
-                    sort_kwargs = {field: {'order': direction}}
+                    sort_kwargs = {field: {'order': direction, 'missing' : '_last' , 'ignore_unmapped' : True}}
 
                 order_list.append(sort_kwargs)
 
