@@ -115,19 +115,26 @@ class ConnectionHandler(object):
 class ConnectionRouter(object):
     def __init__(self, routers_list=None):
         self.routers_list = routers_list
-        self.routers = []
 
-        if self.routers_list is None:
-            self.routers_list = ['haystack.routers.DefaultRouter']
-
-        for router_path in self.routers_list:
-            router_class = load_router(router_path)
-            self.routers.append(router_class())
+    def _ensure_routers(self):
+        """
+         Lazily initializes router classes. Otherwise we can get into
+         situations where the router class we loads loads haystack and
+         lots of haystack modules are depending on importing the
+         connection_router (us).
+        """
+        if not hasattr(self.routers):        
+            if self.routers_list is None:
+                self.routers_list = ['haystack.routers.DefaultRouter']
+            else:
+                self.routers = [load_router(router_path) for router_path in self.routers_list]
+        
+        return self.routers    
 
     def for_action(self, action, **hints):
         conns = []
 
-        for router in self.routers:
+        for router in self._ensure_routers():
             if hasattr(router, action):
                 action_callable = getattr(router, action)
                 connection_to_use = action_callable(**hints)
