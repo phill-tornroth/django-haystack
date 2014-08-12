@@ -1,11 +1,7 @@
-from django.conf import settings
 from django.test import TestCase
-from haystack import connections, connection_router
-from haystack.query import SearchQuerySet
+from haystack import connections
 from haystack.utils.loading import UnifiedIndex
-from discovery.models import Foo
-from discovery.search_indexes import FooIndex, BarIndex
-
+from discovery.search_indexes import FooIndex
 
 class ManualDiscoveryTestCase(TestCase):
     def test_discovery(self):
@@ -33,11 +29,13 @@ class AutomaticDiscoveryTestCase(TestCase):
 
         # Test exclusions.
         ui.excluded_indexes = ['discovery.search_indexes.BarIndex']
+        ui.reset()
         ui.build()
 
         self.assertEqual(len(ui.get_indexed_models()), 1)
 
         ui.excluded_indexes = ['discovery.search_indexes.BarIndex', 'discovery.search_indexes.FooIndex']
+        ui.reset()
         ui.build()
 
         self.assertEqual(len(ui.get_indexed_models()), 0)
